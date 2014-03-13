@@ -1,0 +1,22 @@
+#%RAML 0.8
+---
+
+title: Api
+baseUri: http://localhost
+version: .1
+
+mediaType: application/json
+
+schemas:
+  - Post: !include api/models/post/model.json
+
+traits:
+  - pageable: !include api/traits/pageable.raml
+
+resourceTypes:
+  - standardResponse: !include api/resourceTypes/standardResponse.raml
+  - collectionItem: !include api/resourceTypes/collectionItem.raml
+  - collection: !include api/resourceTypes/collection.raml
+
+
+/posts: !include api/posts.raml

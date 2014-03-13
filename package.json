@@ -1,11 +1,38 @@
 {
-  "name": "raml-api",
-  "version": "0.0.0",
-  "description": "Generates a fake API based on a RAML file",
-  "main": "raml_api.js",
+  "name": "raml-fake-api",
+  "version": "0.0.1",
+  "description": "Autogenerate RAML Fake APIs.",
+  "main": "src/raml_fake_api.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine-node spec"
   },
-  "author": "",
-  "license": "ISC"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quri/raml-fake-api.git"
+  },
+  "keywords": [
+    "raml",
+    "api",
+    "rest",
+    "fake"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Quri",
+    "email": "dev@quri.com"
+  },
+  "homepage": "https://github.com/quri/raml-fake-api",
+  "bugs": {
+    "url": "https://github.com/quri/raml-fake-api/issues"
+  },
+  "readme": "",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "raml-parser": "0.8.5",
+    "underscore": "1.6.0",
+    "json-schema-random-instance": "0.1.1"
+  },
+  "devDependencies": {
+    "jasmine-node": "latest"
+  }
 }

@@ -1,0 +1,15 @@
+type: standardResponse
+post:
+  body:
+    schema: new<<resourcePathName | !singularize>>
+  responses:
+    200:
+      body:
+        schema: <<resourcePathName | !singularize>>
+get:
+  is: [pageable]
+  responses:
+    200:
+      body:
+        schema: <<resourcePathName>>
+        example: <<collectionResponseExample>>

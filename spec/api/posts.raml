@@ -1,0 +1,15 @@
+description: The Posts resource
+type:
+  collection: { collectionResponseExample: !include models/post/collection-example.json }
+get:
+  description: Loads a collection of Posts
+
+/{id}:
+  type:
+    collectionItem: { itemResponseExample: !include models/post/model-example.json }
+  uriParameters:
+    id:
+      displayName: Post Id
+      type: number
+  get:
+    description: Returns an individualPost

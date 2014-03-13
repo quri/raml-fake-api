@@ -1,0 +1,32 @@
+get?:
+  responses:
+    200?:
+      description: |
+          The request has succeeded. The information returned with the response
+          is dependent on the method used in the request.
+    202?:
+      description: |
+          The request has been accepted for processing, but the processing has
+          not been completed.
+    302?:
+      description: "Found. The requested resource resides temporarily under a different URI."
+    304?:
+      description: |
+          Not Modified. If the client has performed a conditional GET request
+          and access is allowed, but the document has not been modified
+    400:
+      description: |
+          Bad Request. The request could not be understood by the server due
+          to malformed syntax.
+    401:
+      description: "Unauthorized. The request requires user authentication."
+    404:
+      description: "Not Found. The server has not found anything matching the Request-URI."
+    429:
+      description: "Your application is sending too many simultaneous requests."
+    500:
+      description: "We couldn't return the representation due to an internal server error."
+    507:
+      description: |
+          Insufficient Storage. The server is unable to store the representation
+          needed to complete the request
