@@ -3,32 +3,11 @@ var raml = require('raml-parser');
 var fs = require('fs');
 var _ = require('underscore');
 
-/*
-  Ideas here:
-
-  1. Parse all raml
-  2. Return actual middleware function
-*/
-exports.create = function(file, callback) {
+function createFakeRamlApi(file, callback) {
   var api = null;
   var schemaGenerators = {};
-
-  var apiClient = {
-    request: function (httpMethod, originalUrl) {
-      var parsedUrl = url.parse(originalUrl, true);
-      var pathParts = parsedUrl.pathname.split('/').slice(1);
-
-      // Pull out the relevant portions of the api request
-      // and replace all numbers (usually an id) with a real
-      // js number
-      apiParts = _.map(pathParts, function(part) {
-        if (!parseInt(part)) {
-          return '/' + part;
-        } else {
-          return parseInt(part);
-        }
-      });
-
+  var fakeRamlApi = {
+    request: function (httpMethod, path) {
       // This searches an API's resources for a particular
       // part that's based on the relative URI. If we're dealing with a
       // number it's safe to assume the first object with URI parameters
@@ -51,6 +30,35 @@ exports.create = function(file, callback) {
         return api;
       };
 
+      var findApiParts = function(rootApi, path) {
+        // Pull out the relevant portions of the api request
+        // and replace all numbers (usually an id) with a real
+        // js number
+        var pathParts = path.split('/').slice(1);
+
+        var apiParts = _.map(pathParts, function(part) {
+          if (!parseInt(part)) {
+            return '/' + part;
+          } else {
+            return parseInt(part);
+          }
+        });
+
+        // Starting point
+        var currentApi = rootApi;
+
+        // makes it easier to just pop portions off
+        apiParts = apiParts.reverse();
+
+        while(part = apiParts.pop()) {
+          if (_.has(currentApi, 'resources')) {
+            result = findApi(currentApi.resources, part);
+            if(result != undefined) currentApi = result;
+          }
+        }
+        return currentApi;
+      };
+
       var findMethod = function(methods, desiredMethod) {
         var lowercasedDesiredMethod = desiredMethod.toLowerCase();
         var method =
@@ -60,54 +68,50 @@ exports.create = function(file, callback) {
             }
             return false;
           });
-
+          if (method == undefined) {
+            throw("Method not found in current api.", currentApi);
+          }
           return method;
       };
 
-      // makes it easier to just pop portions off
-      apiParts = apiParts.reverse();
-
-      currentApi = api;
-      while(part = apiParts.pop()) {
-        if (_.has(currentApi, 'resources')) {
-          result = findApi(currentApi.resources, part);
-          if(result != undefined) currentApi = result;
+      var findResponseType = function(url) {
+        var parsedUrl = url.parse(path, true);
+        var result = '200';
+        if (parsedUrl.query['resp']) {
+          result = parsedUrl.query['resp'];
         }
-      }
+        return result;
+      };
 
-      method = findMethod(currentApi.methods, httpMethod);
-
-      if (method == undefined) {
-        throw("Method not found in current api.", currentApi);
-      }
-
-      if (method.responses == undefined) {
-        throw('No valid responses in currentApi', currentApi);
-      }
-
-      responseType = '200';
-      if (parsedUrl.query['resp']) {
-        responseType = parsedUrl.query['resp'];
-      }
-
-      if (method.responses[responseType]) {
-        if (method.responses[responseType]['body']) {
-          if (method.responses[responseType]['body']['application/json']) {
-            if (method.responses[responseType]['body']['application/json']['example']) {
-              return method.responses[responseType]['body']['application/json']['example'];
+      var findExample = function(method, responseType) {
+        if (method.responses) {
+          if (method.responses[responseType]) {
+            if (method.responses[responseType]['body']) {
+              if (method.responses[responseType]['body']['application/json']) {
+                if (method.responses[responseType]['body']['application/json']['example']) {
+                  return method.responses[responseType]['body']['application/json']['example'];
+                }
+              }
             }
           }
         }
-      }
+        throw('No valid responses in currentApi', currentApi);
+      };
 
-      throw('No valid responses found.', method.responses);
+
+      var currentApi = findApiParts(api, path);
+      var method = findMethod(currentApi.methods, httpMethod);
+      var responseType = findResponseType(url);
+      return findExample(method, responseType);
     }
   }
 
   raml.loadFile(file).then(function(parsedApi) {
     api = parsedApi;
-    callback(apiClient);
-
+    callback(fakeRamlApi);
+  },function(error) {
     console.log('Error loading raml:', error);
   });
 }
+
+exports.create = createFakeRamlApi;
