@@ -7,13 +7,16 @@ function createFakeRamlApi(file, callback) {
   var api = null;
   var schemaGenerators = {};
   var fakeRamlApi = {
+    navigate: function() {
+      return api;
+    },
     request: function (httpMethod, path) {
       // This searches an API's resources for a particular
       // part that's based on the relative URI. If we're dealing with a
       // number it's safe to assume the first object with URI parameters
       // is our API (need to double check this though)
-      var findApi = function(resources, part) {
-        var api =
+      var findBaseApi = function(resources, part) {
+        var baseApi =
           _.find(resources, function(resource) {
             if (typeof(part) == 'number') {
               if (resource.uriParameters) {
@@ -27,7 +30,7 @@ function createFakeRamlApi(file, callback) {
             return false;
           });
 
-        return api;
+        return baseApi;
       };
 
       var findApiParts = function(rootApi, path) {
@@ -52,7 +55,7 @@ function createFakeRamlApi(file, callback) {
 
         while(part = apiParts.pop()) {
           if (_.has(currentApi, 'resources')) {
-            result = findApi(currentApi.resources, part);
+            result = findBaseApi(currentApi.resources, part);
             if(result != undefined) currentApi = result;
           }
         }
