@@ -1,5 +1,5 @@
-fs = require('fs');
-ramlFakeApi = require('../src/raml_fake_api.js');
+var fs = require('fs');
+var ramlFakeApi = require('../src/raml_fake_api.js');
 
 describe("apiSpec", function() {
 
@@ -19,7 +19,7 @@ describe("apiSpec", function() {
 
         fs.readFile("./spec/api/models/post/collection-example.json", "utf8", function (err,data) {
           expect(err).toBe(null);
-          expect(data).toEqual(json)
+          expect(data).toEqual(json);
           done();
         });
       });
@@ -31,7 +31,7 @@ describe("apiSpec", function() {
 
         fs.readFile("./spec/api/models/post/model-example.json", "utf8", function (err,data) {
           expect(err).toBe(null);
-          expect(data).toEqual(json)
+          expect(data).toEqual(json);
           done();
         });
       });
