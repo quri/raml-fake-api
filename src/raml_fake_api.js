@@ -114,7 +114,7 @@ function createFakeRamlApi(file, callback) {
         var method = findMethod(currentApi.methods, httpMethod);
         var status = findResponseStatus(method, url);
         var body = findResponseBody(method, status);
-        var headers = { "Content-Type": "application/json" };
+        var headers = { "Content-Type": "application/json; charset=utf-8" };
         return [status, headers, body];
       } catch(e) {
         return ["500", { "Content-Type": "text/plain" }, e];
