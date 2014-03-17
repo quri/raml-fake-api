@@ -77,7 +77,7 @@ function createFakeRamlApi(file, callback) {
           return method;
       };
 
-      var findResponseType = function(url) {
+      var findResponseStatus = function(url) {
         var parsedUrl = url.parse(path, true);
         var result = '200';
         if (parsedUrl.query['resp']) {
@@ -86,13 +86,13 @@ function createFakeRamlApi(file, callback) {
         return result;
       };
 
-      var findExample = function(method, responseType) {
+      var findExample = function(method, status) {
         if (method.responses) {
-          if (method.responses[responseType]) {
-            if (method.responses[responseType]['body']) {
-              if (method.responses[responseType]['body']['application/json']) {
-                if (method.responses[responseType]['body']['application/json']['example']) {
-                  return method.responses[responseType]['body']['application/json']['example'];
+          if (method.responses[status]) {
+            if (method.responses[status]['body']) {
+              if (method.responses[status]['body']['application/json']) {
+                if (method.responses[status]['body']['application/json']['example']) {
+                  return method.responses[status]['body']['application/json']['example'];
                 }
               }
             }
@@ -101,11 +101,12 @@ function createFakeRamlApi(file, callback) {
         throw('No valid responses in currentApi', currentApi);
       };
 
-
       var currentApi = findApiParts(api, path);
       var method = findMethod(currentApi.methods, httpMethod);
-      var responseType = findResponseType(url);
-      return findExample(method, responseType);
+      var status = findResponseStatus(url);
+      var body = findExample(method, status);
+      var headers = "{\"Content-Type\":\"application/json\"}";
+      return [status, headers, body];
     }
   }
 
