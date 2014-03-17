@@ -77,36 +77,48 @@ function createFakeRamlApi(file, callback) {
           return method;
       };
 
-      var findResponseStatus = function(url) {
-        var parsedUrl = url.parse(path, true);
-        var result = '200';
-        if (parsedUrl.query['resp']) {
-          result = parsedUrl.query['resp'];
+      var findResponseStatus = function(method, url) {
+        var status;
+        var specificStatus = url.parse(path, true).query['resp'];
+        var possibleStatus = Object.keys(method.responses).sort();
+        var isValidResponseStatus;
+
+        if (specificStatus) {
+          isValidResponseStatus = _.find(possibleStatus, function(s) {
+            return s == specificStatus;
+          });
+          if(isValidResponseStatus) {
+            status = specificStatus;
+          } else {
+            throw("Invalid response status in resp parameter");
+          }
+        } else {
+          status = possibleStatus[0];
         }
-        return result;
+        return status;
       };
 
-      var findExample = function(method, status) {
-        if (method.responses) {
-          if (method.responses[status]) {
-            if (method.responses[status]['body']) {
-              if (method.responses[status]['body']['application/json']) {
-                if (method.responses[status]['body']['application/json']['example']) {
-                  return method.responses[status]['body']['application/json']['example'];
-                }
-              }
+      var findResponseBody = function(method, status) {
+        if (method.responses[status]['body']) {
+          if (method.responses[status]['body']['application/json']) {
+            if (method.responses[status]['body']['application/json']['example']) {
+              return method.responses[status]['body']['application/json']['example'];
             }
           }
         }
-        throw('No valid responses in currentApi', currentApi);
+        return "";
       };
 
-      var currentApi = findApiParts(api, path);
-      var method = findMethod(currentApi.methods, httpMethod);
-      var status = findResponseStatus(url);
-      var body = findExample(method, status);
-      var headers = "{\"Content-Type\":\"application/json\"}";
-      return [status, headers, body];
+      try {
+        var currentApi = findApiParts(api, path);
+        var method = findMethod(currentApi.methods, httpMethod);
+        var status = findResponseStatus(method, url);
+        var body = findResponseBody(method, status);
+        var headers = "{\"Content-Type\":\"application/json\"}";
+        return [status, headers, body];
+      } catch(e) {
+        return ["500", "{\"Content-Type\":\"text/plain\"}", e];
+      }
     }
   }
 

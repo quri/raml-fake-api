@@ -43,13 +43,26 @@ describe("apiSpec", function() {
       });
     });
 
-    // it("returns a specific JSON http code sample response", function(done) {
-    //   ramlFakeApi.create("./spec/api.raml", function(api) {
-    //     json = api.request("GET", "/posts/1?resp=422");
-    //     expect("").toEqual(json)
-    //     done();
-    //   });
-    // });
+    it("returns a specific http response sample response", function(done) {
+      ramlFakeApi.create("./spec/api.raml", function(api) {
+        response = api.request("GET", "/posts/1?resp=250");
+        expect(response[0]).toEqual("250");
+        expect(response[1]).toEqual("{\"Content-Type\":\"application/json\"}");
+        expect(response[2]).toEqual("my custom response");
+        done();
+      });
+    });
+
+    it("returns a 500 when specific response does not exist", function(done) {
+      ramlFakeApi.create("./spec/api.raml", function(api) {
+        response = api.request("GET", "/posts/1?resp=399");
+        expect(response[0]).toEqual("500");
+        expect(response[1]).toEqual("{\"Content-Type\":\"text/plain\"}");
+        expect(response[2]).toEqual("Invalid response status in resp parameter");
+        done();
+      });
+    });
+
   });
 
 });
