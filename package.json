@@ -1,6 +1,6 @@
 {
   "name": "raml-fake-api",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Autogenerate RAML Fake APIs.",
   "main": "src/raml_fake_api.js",
   "scripts": {
