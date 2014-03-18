@@ -53,7 +53,7 @@ describe("apiSpec", function() {
       });
     });
 
-    it("returns a 500 when specific response does not exist", function(done) {
+    it("returns invalid response message when specific response does not exist", function(done) {
       ramlFakeApi.create("./spec/api.raml", function(api) {
         response = api.request("GET", "/posts/1?resp=399");
         expect(response[0]).toEqual("500");
@@ -62,6 +62,32 @@ describe("apiSpec", function() {
         done();
       });
     });
+
+    it("returns a schema of a endpoint", function(done) {
+      ramlFakeApi.create("./spec/api.raml", function(api) {
+        response = api.request("GET", "/posts/1.schema");
+
+        expect(response[0]).toEqual("200");
+        expect(response[1]["Content-Type"]).toEqual("application/json; charset=utf-8");
+
+        fs.readFile("./spec/api/models/post/model.json", "utf8", function (err,data) {
+          expect(err).toBe(null);
+          expect(response[2]).toEqual(data);
+          done();
+        });
+      });
+    });
+
+    it("returns invalid format message when specific format does not exist", function(done) {
+      ramlFakeApi.create("./spec/api.raml", function(api) {
+        response = api.request("GET", "/posts/1.doc");
+        expect(response[0]).toEqual("500");
+        expect(response[1]["Content-Type"]).toEqual("text/plain");
+        expect(response[2]).toEqual("Invalid format");
+        done();
+      });
+    });
+
 
   });
 

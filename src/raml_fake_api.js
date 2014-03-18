@@ -38,6 +38,8 @@ function createFakeRamlApi(file, callback) {
         // and replace all numbers (usually an id) with a real
         // js number
         var pathParts = path.split('/').slice(1);
+        var last = pathParts[pathParts.length - 1];
+        pathParts[pathParts.length - 1] = last.split("?")[0].split(".")[0]
 
         var apiParts = _.map(pathParts, function(part) {
           if (!parseInt(part)) {
@@ -48,18 +50,18 @@ function createFakeRamlApi(file, callback) {
         });
 
         // Starting point
-        var currentApi = rootApi;
+        var api = rootApi;
 
         // makes it easier to just pop portions off
         apiParts = apiParts.reverse();
 
         while(part = apiParts.pop()) {
-          if (_.has(currentApi, 'resources')) {
-            result = findBaseApi(currentApi.resources, part);
-            if(result != undefined) currentApi = result;
+          if (_.has(api, 'resources')) {
+            result = findBaseApi(api.resources, part);
+            if(result != undefined) api = result;
           }
         }
-        return currentApi;
+        return api;
       };
 
       var findMethod = function(methods, desiredMethod) {
@@ -72,7 +74,7 @@ function createFakeRamlApi(file, callback) {
             return false;
           });
           if (method == undefined) {
-            throw("Method not found in current api.", currentApi);
+            throw("Method not found in current api.");
           }
           return method;
       };
@@ -100,23 +102,64 @@ function createFakeRamlApi(file, callback) {
         return status;
       };
 
-      var findResponseBody = function(method, status) {
+      var findResponse = function(method, status) {
         if (method.responses[status]['body']) {
           if (method.responses[status]['body']['application/json']) {
-            if (method.responses[status]['body']['application/json']['example']) {
-              return method.responses[status]['body']['application/json']['example'];
-            }
+            return method.responses[status]['body']['application/json'];
           }
         }
         return "";
+      };
+
+      var findExample = function(response) {
+        if(response["example"]) {
+          return response["example"];
+        } else {
+          throw "Example not found";
+        }
+      };
+
+      var findSchema = function(api, response) {
+        if(response["schema"]) {
+          for(var i = 0; i < api["schemas"].length; i++) {
+            var schema = api["schemas"][i];
+            for(name in schema) {
+              if(name.toLowerCase() == response["schema"].toLowerCase()) {
+                return schema[name];
+              }
+            }
+          }
+        }
+        throw "Schema not found";
+      };
+
+      var findFormat = function(path) {
+        var parts = path.split('/')
+        var format = parts[parts.length - 1].split(".")[1];
+        return format || "json";
       };
 
       try {
         var currentApi = findApiParts(api, path);
         var method = findMethod(currentApi.methods, httpMethod);
         var status = findResponseStatus(method, url);
-        var body = findResponseBody(method, status);
+        var response = findResponse(method, status);
         var headers = { "Content-Type": "application/json; charset=utf-8" };
+        var format = findFormat(path);
+        var body;
+
+        switch(format)
+        {
+          case "schema":
+            body = findSchema(api, response);
+            break;
+          case "json":
+            body = findExample(response);
+            break;
+          default:
+            throw "Invalid format";
+        }
+
         return [status, headers, body];
       } catch(e) {
         return ["500", { "Content-Type": "text/plain" }, e];
