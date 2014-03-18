@@ -78,10 +78,12 @@ function createFakeRamlApi(file, callback) {
       };
 
       var findResponseStatus = function(method, url) {
-        var status;
-        var specificStatus = url.parse(path, true).query['resp'];
-        var possibleStatus = Object.keys(method.responses).sort();
-        var isValidResponseStatus;
+        var status,
+            specificStatus,
+            possibleStatus,
+            isValidResponseStatus;
+        specificStatus = url.parse(path, true).query['resp'];
+        possibleStatus = method.responses ? Object.keys(method.responses).sort() : [];
 
         if (specificStatus) {
           isValidResponseStatus = _.find(possibleStatus, function(s) {
