@@ -112,7 +112,7 @@ function createFakeRamlApi(file, callback) {
       };
 
       var findExample = function(response) {
-        if(response["example"]) {
+        if(response["example"] !== undefined) {
           return response["example"];
         } else {
           throw "Example not found";
@@ -120,7 +120,7 @@ function createFakeRamlApi(file, callback) {
       };
 
       var findSchema = function(api, response) {
-        if(response["schema"]) {
+        if(response["schema"] !== undefined) {
           for(var i = 0; i < api["schemas"].length; i++) {
             var schema = api["schemas"][i];
             for(name in schema) {
