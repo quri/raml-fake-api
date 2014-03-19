@@ -129,6 +129,7 @@ function createFakeRamlApi(file, callback) {
               }
             }
           }
+          return response["schema"];
         }
         throw "Schema not found";
       };
